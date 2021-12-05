@@ -101,7 +101,7 @@ impl FromStr for Game {
     }
 }
 
-pub fn bingo(mut g: Game) -> u64 {
+pub fn bingo_first(mut g: Game) -> u64 {
     for n in g.numbers {
         for b in &mut g.boards {
             b.mark(n);
@@ -113,6 +113,20 @@ pub fn bingo(mut g: Game) -> u64 {
     panic!("Should have finished!");
 }
 
+pub fn bingo_last(mut g: Game) -> u64 {
+    for n in g.numbers {       
+        for b in &mut g.boards {
+            b.mark(n);
+        }
+        if g.boards.len() == 1 {
+            return g.boards[0].sum_unmarked() * n;
+        }
+        g.boards.retain(|b| !b.wins());
+    }
+    panic!("Should have finished!");
+}
+
+
 fn main() {
     let mut input = String::new();
 
@@ -120,7 +134,7 @@ fn main() {
         .read_to_string(&mut input)
         .expect("Failed to read input");
 
-    let result = bingo(input.parse().expect("Failed to parse"));
+    let result = bingo_last(input.parse().expect("Failed to parse"));
     println!("{}", result);
 }
 
@@ -150,7 +164,8 @@ mod tests {
 18  8 23 26 20
 22 11 13  6  5
 2  0 12  3  7";
-        assert_eq!(bingo(input.parse().unwrap()), 4512);
+        assert_eq!(bingo_first(input.parse().unwrap()), 4512);
+        assert_eq!(bingo_last(input.parse().unwrap()), 1924);
     }
 
 
