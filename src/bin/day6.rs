@@ -46,6 +46,9 @@ pub fn step(pop: &Population) -> Population {
 pub fn simulate(pop: &Population, steps: u32) -> Population {
     // No idea how to get rid of this clone, which seems unnecessary to me :/
     // Probably doing something wrong with lifetimes?
+    //   Update: could be solved by
+    //    - replace .clone() with calling step once before the loop (& adjust loop to 1..steps)
+    //    - changing the design to mutate the population instead of making immutable copies
     let mut current_pop = pop.clone();
     for _ in 0..steps {
         current_pop = step(&current_pop);
