@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::str::FromStr;
 use std::collections::HashSet;
 use std::collections::HashMap;
@@ -15,26 +18,33 @@ static SEGMENTS: [Segment; 7] = [
     A, B, C, D, E, F, G
 ];
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Digit {
     One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Zero
 }
 
+lazy_static! {
+    static ref DIGIT_SEGMENTS: HashMap<Digit, HashSet<&'static Segment>> = {
+        let mut m = HashMap::new();
+        m.insert(Digit::One, HashSet::from([&C, &F]));
+        m.insert(Digit::Two, HashSet::from([&A, &C, &D, &E, &G]));
+        m.insert(Digit::Three, HashSet::from([&A, &C, &D, &F, &G]));
+        m.insert(Digit::Four, HashSet::from([&B, &C, &D, &F]));
+        m.insert(Digit::Five, HashSet::from([&A, &B, &D, &F, &G]));
+        m.insert(Digit::Six, HashSet::from([&A, &B, &D, &E, &F, &G]));
+        m.insert(Digit::Seven, HashSet::from([&A, &C, &F]));
+        m.insert(Digit::Eight, HashSet::from([&A, &B, &C, &D, &E, &F, &G]));
+        m.insert(Digit::Nine, HashSet::from([&A, &B, &C, &D, &F, &G]));
+        m.insert(Digit::Zero, HashSet::from([&A, &B, &C, &E, &F, &G]));
+        m
+    };
+}
+
 impl Digit {
-    fn segments(&self) -> &[Segment] {
-        match self {
-            Digit::One => &[C, F],
-            Digit::Two => &[A, C, D, E, G],
-            Digit::Three => &[A, C, D, F, G],
-            Digit::Four => &[B, C, D, F],
-            Digit::Five => &[A, B, D, F, G],
-            Digit::Six => &[A, B, D, E, F, G],
-            Digit::Seven => &[A, C, F],
-            Digit::Eight => &[A, B, C, D, E, F, G],
-            Digit::Nine => &[A, B, C, D, F, G],
-            Digit::Zero => &[A, B, C, E, F, G],
-        }
+    fn segments(&self) -> &HashSet<&Segment> {
+        &DIGIT_SEGMENTS.get(self).unwrap()
     }
+
     fn val(&self) -> i32 {
         match self {
             Digit::One => 1,
@@ -52,7 +62,7 @@ impl Digit {
     
     fn as_digit(signals: &Pattern) -> Option<Digit> {
         for d in &DIGITS {
-            if signals.0 == HashSet::from_iter(d.segments().iter()) {
+            if &signals.0 == d.segments() {
                 return Some(*d);
             }
         }
