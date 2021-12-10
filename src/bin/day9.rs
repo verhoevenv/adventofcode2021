@@ -75,6 +75,33 @@ pub fn sum_risks_lowpoints(map: &Heightmap) -> u32 {
     lowpoints(map).iter().map(|p| p.1 + 1).sum()
 }
 
+
+fn find_basin(map: &Heightmap, low_point: &XY) -> Vec<XY> {
+    let mut to_expand = vec![*low_point];
+    let mut basin = vec![*low_point];
+    while let Some(p) = to_expand.pop() {
+        for (neighbour_xy, neighbour_h) in map.adjacents(&p) {
+            if neighbour_h < 9 && !basin.contains(&neighbour_xy) {
+                to_expand.push(neighbour_xy);
+                basin.push(neighbour_xy);
+            }
+        }
+    }
+
+    return basin;
+}
+
+pub fn largest_basins(map: &Heightmap) -> usize {
+    let mut basins: Vec<_> = lowpoints(map).iter()
+                                           .map(|(xy, _)| find_basin(map, xy))
+                                           .map(|b| b.len())
+                                           .collect();
+    basins.sort();
+    basins.reverse();
+    return basins.iter().take(3).product();
+}
+
+
 fn main() {
     let mut input = String::new();
 
@@ -82,7 +109,7 @@ fn main() {
         .read_to_string(&mut input)
         .expect("Failed to read input");
 
-    let result = sum_risks_lowpoints(&input.parse().unwrap());
+    let result = largest_basins(&input.parse().unwrap());
     println!("{}", result);
 }
 
@@ -102,4 +129,14 @@ mod tests {
         assert_eq!(sum_risks_lowpoints(&input.parse().unwrap()), 15);
     }   
 
+    #[test]
+    fn test_largest_basins() {
+        let input = "2199943210
+3987894921
+9856789892
+8767896789
+9899965678";
+
+        assert_eq!(largest_basins(&input.parse().unwrap()), 1134);
+    }   
 }
