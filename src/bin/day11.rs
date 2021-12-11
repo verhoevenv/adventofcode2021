@@ -39,6 +39,15 @@ impl<T: FromStr> Grid<T> {
             }
         }
 
+        /*
+        Would prefer 
+
+        neighbours.iter()
+                  .map(|xy| (*xy, self.get(xy)))
+                  .collect()
+
+        but rust doesn't like this?
+        */
         self.map.iter_mut()
                 .filter(|(k, _)| neighbours.contains(k))
                 .map(|(k, v)| (*k, v))
